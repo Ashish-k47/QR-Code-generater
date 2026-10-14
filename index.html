@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Generate QR codes for event tickets with the Prodesk Ticket QR Code Generator Worker." />
+  <title>Ticket QR Code Generator Worker — Prodesk IT</title>
+
+  <!-- Favicon (monochromatic SVG) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%23000'/><rect x='6' y='6' width='8' height='8' fill='%23fff'/><rect x='18' y='6' width='8' height='8' fill='%23fff'/><rect x='6' y='18' width='8' height='8' fill='%23fff'/><rect x='18' y='18' width='4' height='4' fill='%23fff'/><rect x='24' y='24' width='2' height='2' fill='%23fff'/></svg>" />
+
+  <link rel="stylesheet" href="/src/css/styles.css" />
+</head>
+<body>
+
+  <!-- Skip navigation link for keyboard / screen-reader users (a11y) -->
+  <a class="skip-link" href="#ticket-form">Skip to form</a>
+
+  <!-- ══════════════════════════════════════════════════════════════
+       Main Application Shell
+       ═══════════════════════════════════════════════════════════ -->
+  <main id="app" role="main" aria-label="Ticket QR Code Generator Worker">
+
+    <!-- ── Header ──────────────────────────────────────────────── -->
+    <header class="app-header">
+      <p class="app-header__eyebrow">Prodesk IT · Internal Tools</p>
+      <h1 class="app-header__title" id="app-title">
+        Ticket QR Code Generator Worker
+      </h1>
+      <p class="app-header__subtitle">
+        Generate, store, and retrieve QR-encoded event tickets.
+      </p>
+    </header>
+
+    <!-- ── Global Error Banner ─────────────────────────────────── -->
+    <div
+      id="error-banner"
+      role="alert"
+      aria-live="assertive"
+      aria-atomic="true"
+      aria-hidden="true"
+      style="display:none"
+    >
+      <p id="error-banner-msg"></p>
+      <button
+        id="error-banner-close"
+        type="button"
+        aria-label="Dismiss error"
+      >✕</button>
+    </div>
+
+    <!-- ── Two-column grid ──────────────────────────────────────── -->
+    <div class="app-grid">
+
+      <!-- ── LEFT: Ticket Form ─────────────────────────────────── -->
+      <section aria-labelledby="form-heading">
+        <div class="card">
+          <h2 class="card__title" id="form-heading">New Ticket</h2>
+
+          <form
+            id="ticket-form"
+            novalidate
+            aria-labelledby="form-heading"
+            data-testid="ticket-form"
+          >
+
+            <!-- Ticket ID ─────────────────────────────────────── -->
+            <div class="field-group" data-testid="field-ticketId">
+              <label for="ticketId">
+                Ticket ID
+                <span class="required-mark" aria-hidden="true">*</span>
+              </label>
+              <input
+                type="text"
+                id="ticketId"
+                name="ticketId"
+                aria-required="true"
+                aria-describedby="ticketId-error"
+                placeholder="e.g. TKT-2024-001"
+                autocomplete="off"
+                maxlength="50"
+              />
+              <span
+                id="ticketId-error"
+                role="alert"
+                class="field-error"
+                aria-live="assertive"
+                style="display:none"
+              >
+                Ticket ID is required and must be 1–50 characters.
+              </span>
+            </div>
+
+            <!-- Event Name ──────────────────────────────────────── -->
+            <div class="field-group" data-testid="field-eventName">
+              <label for="eventName">
+                Event Name
+                <span class="required-mark" aria-hidden="true">*</span>
+              </label>
+              <input
+                type="text"
+                id="eventName"
+                name="eventName"
+                aria-required="true"
+                aria-describedby="eventName-error"
+                placeholder="e.g. Prodesk Annual Summit"
+                autocomplete="off"
+              />
+              <span
+                id="eventName-error"
+                role="alert"
+                class="field-error"
+                aria-live="assertive"
+                style="display:none"
+              >
+                Event Name is required.
+              </span>
+            </div>
+
+            <!-- Holder Name ──────────────────────────────────────── -->
+            <div class="field-group" data-testid="field-holderName">
+              <label for="holderName">
+                Holder Name
+                <span class="required-mark" aria-hidden="true">*</span>
+              </label>
+              <input
+                type="text"
+                id="holderName"
+                name="holderName"
+                aria-required="true"
+                aria-describedby="holderName-error"
+                placeholder="e.g. Alice Johnson"
+                autocomplete="name"
+              />
+              <span
+                id="holderName-error"
+                role="alert"
+                class="field-error"
+                aria-live="assertive"
+                style="display:none"
+              >
+                Holder Name is required.
+              </span>
+            </div>
+
+            <!-- Seat Number ─────────────────────────────────────── -->
+            <div class="field-group" data-testid="field-seatNumber">
+              <label for="seatNumber">
+                Seat Number
+                <span class="required-mark" aria-hidden="true">*</span>
+              </label>
+              <input
+                type="text"
+                id="seatNumber"
+                name="seatNumber"
+                aria-required="true"
+                aria-describedby="seatNumber-error"
+                placeholder="e.g. A-12"
+                autocomplete="off"
+                maxlength="20"
+              />
+              <span
+                id="seatNumber-error"
+                role="alert"
+                class="field-error"
+                aria-live="assertive"
+                style="display:none"
+              >
+                Seat Number is required and must not contain special characters.
+              </span>
+            </div>
+
+            <!-- Issue Date ────────────────────────────────────────── -->
+            <div class="field-group" data-testid="field-issueDate">
+              <label for="issueDate">
+                Issue Date
+                <span class="required-mark" aria-hidden="true">*</span>
+              </label>
+              <input
+                type="date"
+                id="issueDate"
+                name="issueDate"
+                aria-required="true"
+                aria-describedby="issueDate-error"
+                max=""
+              />
+              <span
+                id="issueDate-error"
+                role="alert"
+                class="field-error"
+                aria-live="assertive"
+                style="display:none"
+              >
+                Issue Date is required and cannot be set in the future.
+              </span>
+            </div>
+
+            <!-- Submit ────────────────────────────────────────────── -->
+            <button
+              type="submit"
+              id="submit-btn"
+              aria-label="Generate QR Code for ticket"
+              data-testid="submit-btn"
+            >
+              Generate QR Code
+            </button>
+
+          </form>
+        </div>
+      </section>
+
+      <!-- ── RIGHT: QR Output ──────────────────────────────────── -->
+      <section aria-labelledby="qr-heading">
+        <div class="card">
+          <h2 class="card__title" id="qr-heading">QR Code Output</h2>
+
+          <!-- Loading Indicator ──────────────────────────────────── -->
+          <div
+            id="loading-indicator"
+            role="status"
+            aria-live="polite"
+            aria-label="Generating QR code, please wait"
+            aria-hidden="true"
+            data-testid="loading-indicator"
+            style="display:none"
+          >
+            <span class="spinner" aria-hidden="true"></span>
+            <span class="loading-text">Generating QR Code…</span>
+          </div>
+
+          <!-- QR Result ────────────────────────────────────────────── -->
+          <section
+            id="qr-result"
+            aria-label="Generated QR Code"
+            aria-live="polite"
+            data-testid="qr-result"
+            style="display:none"
+            tabindex="-1"
+          >
+            <div class="qr-result__badge">✓ QR Generated</div>
+
+            <img
+              id="qr-image"
+              alt="QR Code for the ticket"
+              src=""
+              width="200"
+              height="200"
+            />
+
+            <table class="qr-meta" aria-label="Ticket details">
+              <tbody id="qr-meta-body"></tbody>
+            </table>
+
+            <button
+              id="qr-download-btn"
+              type="button"
+              class="qr-download-btn"
+              aria-label="Download QR code as PNG image"
+            >
+              ↓ Download QR Code (PNG)
+            </button>
+          </section>
+
+          <!-- Placeholder when no QR has been generated yet ────── -->
+          <p
+            id="qr-placeholder"
+            style="color: var(--color-500); font-size: var(--text-sm); text-align: center; padding: var(--space-xl) 0;"
+            aria-hidden="false"
+          >
+            Fill in the form and click <strong>Generate QR Code</strong> to begin.
+          </p>
+
+        </div>
+      </section>
+
+    </div><!-- /.app-grid -->
+
+    <!-- ── Ticket List ────────────────────────────────────────── -->
+    <section id="ticket-list-section" aria-labelledby="list-heading">
+      <div class="ticket-list-header">
+        <h2 class="section-title" id="list-heading">Previously Generated Tickets</h2>
+        <button
+          id="refresh-btn"
+          type="button"
+          class="refresh-btn"
+          aria-label="Refresh ticket list"
+        >
+          ↻ Refresh
+        </button>
+      </div>
+
+      <!-- Empty State ─────────────────────────────────────────── -->
+      <div
+        id="empty-state"
+        data-testid="empty-state"
+        role="alert"
+        aria-live="polite"
+        style="display:none"
+      >
+        <div class="empty-state__icon" aria-hidden="true">🎫</div>
+        <p class="empty-state__title">No data found</p>
+        <p class="empty-state__body">
+          No tickets have been generated yet. Use the form above to create your first ticket QR code.
+        </p>
+      </div>
+
+      <!-- Ticket Table ─────────────────────────────────────────── -->
+      <div
+        id="ticket-table-wrap"
+        class="ticket-table-wrap"
+        style="display:none"
+      >
+        <table
+          class="ticket-table"
+          aria-label="Generated tickets"
+          aria-describedby="list-heading"
+        >
+          <thead>
+            <tr>
+              <th scope="col">Ticket ID</th>
+              <th scope="col">Event</th>
+              <th scope="col">Holder</th>
+              <th scope="col">Seat</th>
+              <th scope="col">Issue Date</th>
+              <th scope="col"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody id="ticket-table-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── Footer ──────────────────────────────────────────────── -->
+  <footer class="app-footer" role="contentinfo">
+    <p>Prodesk IT · Ticket QR Code Generator Worker · Internal Use Only</p>
+  </footer>
+
+  <!-- App Bootstrap -->
+  <script type="module" src="/src/js/app.js"></script>
+
+  <!-- Set today as the max date for issueDate input -->
+  <script>
+    document.getElementById('issueDate').max = new Date().toISOString().split('T')[0];
+  </script>
+
+</body>
+</html>
